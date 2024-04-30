@@ -1,0 +1,27 @@
+{
+  "map1": [
+    {"name": "北京", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "天津", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "上海", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "重庆", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "河北", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "山西", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "辽宁", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "吉林", "itemStyle": {"normal": {"areaColor": "#ffa500"}}},
+    {"name": "黑龙江", "itemStyle": {"normal": {"areaColor": "#ffa500"}}}
+
+  ],
+  "map2": [
+    {"name": "江苏", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "浙江", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "安徽", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "福建", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "江西", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "山东", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "河南", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "湖北", "itemStyle": {"normal": {"areaColor": "#008000"}}},
+    {"name": "湖南", "itemStyle": {"normal": {"areaColor": "#008000"}}}
+
+  ]
+
+}

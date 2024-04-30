@@ -1,0 +1,167 @@
+header {
+    width: 100%;
+    padding: 10px;
+    background-color: #24292e; /* GitHub Header 背景颜色 */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+    position: fixed; /* 固定在页面顶部 */
+    top: 0;
+    z-index: 1000; /* 确保在最上层 */
+}
+
+.logo img {
+    width: 40px; /* 调整 logo 图片的大小 */
+}
+.user-info a {
+  color: white; /* 设置链接颜色为白色 */
+  font-weight: bold; /* 设置链接文字加粗 */
+  text-decoration: none;
+}
+.user-info a:hover {
+  color: #0366d6; /* 设置链接悬停时的颜色 */
+}
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+.container {
+    max-width: 1170px;
+    margin: auto;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.heading h1:after {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 2px;
+    background: #BABABA;
+    margin-top: 4px;
+
+}
+
+.clear-fix {
+    clear: both;
+}
+
+.hidden {
+    visibility: hidden !important;
+}
+
+/* end global */
+
+/* start of our services section */
+
+#our-services {
+    background: #f6f6f6;
+    min-height: 100vh;
+    padding-top: 25vh;
+}
+
+/* OUR SEERVICES LEFT SIDE */
+
+#our-services .desc {
+    width: 33%;
+    float: left;
+}
+
+#our-services .desc .heading h1 {
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1.4px;
+    margin-bottom: 30px;
+}
+
+#our-services .desc .text {
+    color: #BABABA;
+}
+
+/* OUR SERVICES RIGHT SIDE */
+
+#our-services .services {
+    width: 67%;
+    float: left;
+}
+
+#our-services .services .column {
+    float: left;
+    margin-right: 60px;
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+}
+
+#our-services .services .column .service {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    height: 120px;
+    background: #FFFFFF;
+    transition: all 0.1s ease;
+    margin-bottom: 7px;
+}
+
+#our-services .services .column .service:hover {
+    background: #28282e;
+    color: #fff;
+}
+
+#our-services .services .column .service:hover .service-icon {
+    color: #fff;
+}
+
+#our-services .services .column .service .service-desc {
+    transform: rotate(-45deg);
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+#our-services .services .column .service .service-desc .service-icon  {
+    font-size: 20px;
+    margin-bottom: 5px;
+    color: #f57469;
+}
+
+/* end of our services section */
+
+/* media query */
+
+@media all and (max-width: 967px) {
+    #our-services {
+        padding-top: 60px;
+    }
+
+    #our-services .desc {
+        width: 100%;
+        float: none;
+        margin-bottom: 30px;
+    }
+
+    #our-services .services {
+        width: 100%;
+    }
+
+    #our-services .services .column {
+        transform: rotate(0deg);
+        margin-right: 10px;
+    }
+
+    #our-services .services .column .service .service-desc {
+        transform: rotate(0deg);
+    }
+}
+.jump_link {
+  text-decoration: none; /* 移除链接的下划线 */
+}

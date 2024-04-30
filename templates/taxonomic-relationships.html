@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Classification</title>
+    <!-- 引入 ECharts 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+</head>
+<body>
+  <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
+  <div id="main" style="width: 800px;height:600px;"></div>
+  <script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // 从静态文件读取TSV数据
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/static/datasets/basicData.tsv', true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var tsvData = xhr.responseText;
+            // 解析TSV数据
+            var lines = tsvData.split('\n');
+            var nodes = [];
+            var links = [];
+            for (var i = 1; i < lines.length; i++) { // 从第二行开始解析数据
+                var parts = lines[i].trim().split('\t');
+                if (parts.length >= 4) { // 至少有四列数据
+                    var parentName = parts[1]; // 父节点名称
+                    var childName = parts[3]; // 子节点名称
+                    nodes.push({name: parentName});
+                    nodes.push({name: childName});
+                    links.push({source: parentName, target: childName});
+                }
+            }
+            // 构建图表数据
+            var option = {
+                title: {
+                    text: 'Scientific Classification',
+                    subtext: 'From Wikipedia, the free encyclopedia',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}'
+                },
+                legend: {
+                    show: true,
+                    data: ['Scientific Classification']
+                },
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    force: {
+                        repulsion: 200, // 节点间斥力，数值越大则节点间距越大
+                        edgeLength: 100 // 线的长度，数值越大则节点间距越大
+                    },
+                    symbolSize: 7,
+                    roam: true, // 开启鼠标缩放和平移漫游
+                    label: {
+                        show: true,
+                        position: 'right',
+                        fontSize: 12
+                    },
+                    edgeSymbol: ['circle', 'arrow'],
+                    edgeSymbolSize: [2, 5],
+                    edgeLabel: {
+                        show: true,
+                        formatter: '{c}'
+                    },
+                    data: nodes,
+                    links: links
+                }]
+            };
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        }
+    };
+    xhr.send();
+  </script>
+</body>
+</html>

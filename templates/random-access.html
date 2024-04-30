@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSV文件展示</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    perspective: 1000px; /* 添加透视效果 */
+  }
+  #image {
+    width: 100%;
+    height: 50%;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative; /* 添加相对定位 */
+  }
+  .card {
+    width: 250px; /* 调整卡片宽度 */
+    height: 400px; /* 调整卡片高度 */
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin: 0 -125px; /* 调整间距 */
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    position: absolute; /* 改为绝对定位 */
+    overflow: hidden;
+    transition: transform 0.5s ease, z-index 0.5s ease; /* 添加变换和层叠顺序的过渡效果 */
+  }
+
+  /* 这是卡片堆叠层级 */
+  /* 改一下1234567的顺序，可以使得图片切换方向改变 */
+  .card:nth-child(4) {
+    transform: scale(1.2); /* 设置中间的卡片放大 */
+    z-index: 3; /* 提高层叠顺序 */
+  }
+
+  .card:nth-child(3){
+    transform: scale(0.95) translateX(-60%);
+    z-index: 2; /* 中等层叠顺序 */
+  }
+  .card:nth-child(5) {
+    transform: scale(0.95) translateX(+60%);
+    z-index: 2; /* 中等层叠顺序 */
+  }
+
+  .card:nth-child(2){
+    transform: scale(0.85) translateX(-120%);
+    z-index: 1; /* 较低的层叠顺序 */
+  }
+  .card:nth-child(6) {
+    transform: scale(0.85) translateX(+120%);
+    z-index: 1; /* 较低的层叠顺序 */
+  }
+  .card:nth-child(1) {
+    transform: scale(0.75) translateX(-180%);
+    z-index: 0; /* 最低的层叠顺序 */
+  }
+  .card:nth-child(7) {
+    transform: scale(0.75) translateX(+180%);
+    z-index: 0; /* 最低的层叠顺序 */
+  }
+
+  /* 添加动画类 */
+  .fade-out {
+    opacity: 0.8; /* 设置为小于 1 的值 */
+    transform: translateY(20px); /* 卡片向下移动，为新卡片让出空间 */
+    transition: opacity 0.7s ease-in-out, transform 2s ease-in-out; /* 添加透明度和变换的过渡效果 */
+  }
+
+
+  .button-container {
+  margin-top: 10px; /* 减少按钮容器与卡片容器之间的间距 */
+  position: absolute; /* 改为绝对定位 */
+  bottom: 20px; /* 距离底部 20px */
+  left: 50%; /* 居中 */
+  transform: translateX(-50%); /* 水平居中 */
+  }
+
+
+  #continue-btn {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* 添加过渡效果 */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+  }
+
+  #continue-btn:hover {
+    background-color: #4CAF50;
+    transform: scale(1.05); /* 按钮放大 5% */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* 提高阴影 */
+  }
+
+</style>
+</head>
+<body>
+
+<div class="card-container">
+  <div class="card" id="card1">
+    <div class="image" id="image1"></div>
+    <div class="info">
+      <h3 class="name" id="name1"></h3>
+      <p class="nickname" id="nickname1"></p>
+    </div>
+    <div class="description" id="description1"></div>
+  </div>
+  <div class="card" id="card2">
+    <div class="image" id="image2"></div>
+    <div class="info">
+      <h3 class="name" id="name2"></h3>
+      <p class="nickname" id="nickname2"></p>
+    </div>
+    <div class="description" id="description2"></div>
+  </div>
+  <div class="card" id="card3">
+    <div class="image" id="image3"></div>
+    <div class="info">
+      <h3 class="name" id="name3"></h3>
+      <p class="nickname" id="nickname3"></p>
+    </div>
+    <div class="description" id="description3"></div>
+  </div>
+  <div class="card" id="card4">
+    <div class="image" id="image4"></div>
+    <div class="info">
+      <h3 class="name" id="name4"></h3>
+      <p class="nickname" id="nickname4"></p>
+    </div>
+    <div class="description" id="description4"></div>
+  </div>
+  <div class="card" id="card5">
+    <div class="image" id="image5"></div>
+    <div class="info">
+      <h3 class="name" id="name5"></h3>
+      <p class="nickname" id="nickname5"></p>
+    </div>
+    <div class="description" id="description5"></div>
+  </div>
+  <div class="card" id="card6">
+    <div class="image" id="image6"></div>
+    <div class="info">
+      <h3 class="name" id="name6"></h3>
+      <p class="nickname" id="nickname6"></p>
+    </div>
+    <div class="description" id="description6"></div>
+  </div>
+  <div class="card" id="card7">
+    <div class="image" id="image7"></div>
+    <div class="info">
+      <h3 class="name" id="name7"></h3>
+      <p class="nickname" id="nickname7"></p>
+    </div>
+    <div class="description" id="description7"></div>
+  </div>
+</div>
+
+<div class="button-container">
+  <button id="continue-btn">Continue</button>
+</div>
+
+<script>
+  const card1 = document.getElementById('card1');
+  const card2 = document.getElementById('card2');
+  const card3 = document.getElementById('card3');
+  const card4 = document.getElementById('card4');
+  const card5 = document.getElementById('card5');
+  const card6 = document.getElementById('card6');
+  const card7 = document.getElementById('card7');
+  const continueButton = document.getElementById('continue-btn');
+
+  let currentIndex = 1; // Start from the second row, assuming first row is header
+
+  function displayData(rowData, cardElement) {
+    if (!rowData) return; // End of data
+
+    const imageURL = '/static/img/'+rowData[7];
+    const name = rowData[0];
+    const nickname = rowData[1];
+    const description = rowData[5];
+
+    // Update card content
+    cardElement.querySelector('.image').style.backgroundImage = `url(${imageURL})`;
+    cardElement.querySelector('.name').textContent = name;
+    cardElement.querySelector('.nickname').textContent = nickname;
+    cardElement.querySelector('.description').textContent = description.length > 50 ? description.substring(0, 50) + '...' : description;
+  }
+
+  function fetchData() {
+    fetch('/static/datasets/basicData_processed.tsv')
+      .then(response => response.text())
+      .then(data => {
+        const rows = data.split('\n').map(row => row.split('\t'));
+        const nextIndex = currentIndex < rows.length ? currentIndex + 1 : currentIndex;
+
+        // Trigger fade out animation
+        card1.classList.add('fade-out');
+        card2.classList.add('fade-out');
+        card3.classList.add('fade-out');
+        card4.classList.add('fade-out');
+        card5.classList.add('fade-out');
+        card6.classList.add('fade-out');
+        card7.classList.add('fade-out');
+
+        // After fade out, update the data and trigger fade in
+        setTimeout(() => {
+          displayData(rows[currentIndex], card1);
+          displayData(rows[currentIndex + 1], card2);
+          displayData(rows[currentIndex + 2], card3);
+          displayData(rows[currentIndex + 3], card4);
+          displayData(rows[currentIndex + 4], card5);
+          displayData(rows[currentIndex + 5], card6);
+          displayData(rows[currentIndex + 6], card7);
+          card1.classList.remove('fade-out');
+          card2.classList.remove('fade-out');
+          card3.classList.remove('fade-out');
+          card4.classList.remove('fade-out');
+          card5.classList.remove('fade-out');
+          card6.classList.remove('fade-out');
+          card7.classList.remove('fade-out');
+          currentIndex = nextIndex;
+        }, 500); // Adjust the timing according to your preference
+      });
+  }
+
+  fetchData();
+
+  continueButton.addEventListener('click', function() {
+    fetchData();
+  });
+</script>
+
+</body>
+</html>
