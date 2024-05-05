@@ -171,7 +171,7 @@ def delete_user(user_id):
 def index():
     return render_template('index.html')
 
-# 子路由：随机访问
+# 子路由：数据随机展示
 @app.route('/random-access.html')
 @login_required
 def random_access():
@@ -183,23 +183,12 @@ def random_access():
 def taxonomic_relationships():
     return render_template('taxonomic-relationships.html')
 
-# 子路由：分布图
-@app.route('/distribution_map.html')
-@login_required
-def distribution_map():
-    return render_template('distribution_map.html')
-
-# 子路由：搜索页面
-@app.route('/search.html')
+# 子路由：植被分布
+@app.route('/distribution.html')
 @login_required
 def search():
-    return render_template('search.html')
+    return render_template('distribution.html')
 
-# 子路由：卡片页面
-@app.route('/card.html')
-@login_required
-def card():
-    return render_template('card.html')
 
 # 子路由：种类
 @app.route('/category.html')
