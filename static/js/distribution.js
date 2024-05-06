@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // 从文本文件中获取数据并创建滚动元素
-    fetchDataFromFile("/static/datasets/scrolling.txt");
+    fetchDataFromFile("/static/datasets/scrolling_name.txt");
 
     scrollingText.addEventListener("mouseover", function() {
         this.style.animationPlayState = "paused";
