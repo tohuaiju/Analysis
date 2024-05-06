@@ -1,19 +1,30 @@
 document.addEventListener("DOMContentLoaded", function () {
-    var data = ["Scrolling Data 1", "Scrolling Data 2", "Scrolling Data 3"]; // 添加更多滚动数据
-
     var scrollingText = document.querySelector(".scrolling-text");
     var copyMessage = document.createElement("div");
     copyMessage.className = "copy-message";
     document.body.appendChild(copyMessage);
 
-    function createScrollingElements() {
-        data.forEach(function(item) {
+    // 从文本文件中读取数据
+    function fetchDataFromFile(url) {
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                // 将文本内容按中文逗号拆分为数组
+                var dataArray = data.split('，');
+                createScrollingElements(dataArray);
+            })
+            .catch(error => console.error('Error fetching data from file:', error));
+    }
+
+    // 创建滚动元素
+    function createScrollingElements(dataArray) {
+        dataArray.forEach(function(item) {
             var span = document.createElement("span");
-            span.textContent = item;
+            span.textContent = item.trim(); // 去除文本前后的空格
             span.classList.add("copy-text");
             span.addEventListener("click", function() {
                 var tempInput = document.createElement("input");
-                tempInput.value = item;
+                tempInput.value = item.trim();
                 document.body.appendChild(tempInput);
                 tempInput.select();
                 document.execCommand("copy");
@@ -31,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 2000); // 2秒后隐藏提示消息
     }
 
-    // 创建滚动元素
-    createScrollingElements();
+    // 从文本文件中获取数据并创建滚动元素
+    fetchDataFromFile("/static/datasets/scrolling.txt");
 
     scrollingText.addEventListener("mouseover", function() {
         this.style.animationPlayState = "paused";
