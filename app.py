@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, abort
+from flask import Flask, render_template, request, redirect, url_for, abort, send_from_directory
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from functools import wraps
 import json
@@ -13,6 +13,10 @@ app.config['STATIC_FOLDER'] = {
     'static': 'static',
     'node_modules': 'node_modules'
 }
+# static的那个应该是内置有的定义
+@app.route('/node_modules/<path:filename>')
+def node_modules_files(filename):
+    return send_from_directory(app.config['STATIC_FOLDER']['node_modules'], filename)
 
 # 配置 LoginManager
 login_manager = LoginManager(app)
