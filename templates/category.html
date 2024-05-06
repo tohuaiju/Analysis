@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据可视化</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引入ECharts库，用于数据可视化 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%; /* 或者您想要的宽度 */
+        }
+        .chart-container div {
+            margin: 20px;
+        }
+        /* 添加搜索框美化样式 */
+        #searchForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+            border: 1px solid #ccc; /* 添加边框 */
+            border-radius: 24px; /* 设置圆角 */
+            overflow: hidden; /* 确保边框不会因内部元素而变形 */
+        }
+        #searchForm input[type="text"] {
+            padding: 10px 15px; /* 设置内边距 */
+            border: none; /* 移除默认边框 */
+            width: 320px; /* 设置搜索框宽度 */
+            font-size: 16px; /* 设置字体大小 */
+        }
+        #searchForm button {
+            padding: 10px 20px; /* 设置按钮内边距 */
+            background-color: #007bff; /* 设置按钮背景颜色 */
+            color: white; /* 设置按钮文字颜色 */
+            border: none; /* 移除默认边框 */
+            border-radius: 0 24px 24px 0; /* 设置按钮圆角，使其与搜索框匹配 */
+            font-size: 16px; /* 设置字体大小 */
+            cursor: pointer; /* 鼠标悬停时显示手形图标 */
+            transition: background-color 0.3s ease; /* 添加背景颜色渐变效果 */
+        }
+        #searchForm button:hover {
+            background-color: #0056b3; /* 鼠标悬停时按钮背景颜色变深 */
+        }
+        /* 移除搜索框获得焦点时的默认轮廓 */
+    #searchForm input[type="text"]:focus {
+        outline: none; /* 移除轮廓 */
+        border: 0px solid #ccc; /* 可以设置一个轻微的边框，如果需要 */
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1); /* 添加一个轻微的阴影，作为获得焦点时的视觉提示 */
+    }
+
+    /* 美化搜索框在获得焦点时的样式 */
+    #searchForm input[type="text"] {
+        /* ... 其他样式 ... */
+        transition: border-color 0.3s, box-shadow 0.3s; /* 平滑过渡效果 */
+    }
+
+    /* 确保按钮在点击时也有良好的视觉反馈 */
+    #searchForm button:focus {
+        outline: none; /* 移除轮廓 */
+        background-color: #0056b3; /* 可以设置一个与悬停状态不同的背景颜色 */
+    }
+    </style>
+</head>
+<body>
+    <!-- 搜索框容器 -->
+    <div style="text-align: center; margin: 20px;">
+        <form id="searchForm" method="post" action="/search">
+            <input type="text" id="searchTerm" name="search_term" placeholder="搜索植物或类别">
+            <button type="submit">搜索</button>
+        </form>
+    </div>
+
+    <!-- 图表容器 -->
+    <div class="chart-container">
+        <!-- 图表容器 -->
+        <div id="chart0" style="width: 320px; height: 320px;"></div>
+        <div id="chart1" style="width: 320px; height: 320px;"></div>
+        <div id="chart2" style="width: 320px; height: 320px;"></div>
+        <div id="chart3" style="width: 320px; height: 320px;"></div>
+
+    </div>
+
+    <script type="text/javascript">
+        // 使用 fetch API 从 Flask 后端获取数据
+        fetch('/data/environment')
+            .then(response => response.json())
+            .then(data => {
+                renderChart(echarts.init(document.getElementById('chart0')), data, '花卉类别');
+            });
+
+        fetch('/data/category')
+            .then(response => response.json())
+            .then(data => {
+                renderChart(echarts.init(document.getElementById('chart1')), data, '花卉功能');
+            });
+
+        fetch('/data/function')
+            .then(response => response.json())
+            .then(data => {
+                renderChart(echarts.init(document.getElementById('chart2')), data, '应用环境');
+            });
+
+        fetch('/data/difficulty')
+            .then(response => response.json())
+            .then(data => {
+                renderChart(echarts.init(document.getElementById('chart3')), data, '养护难度');
+            });
+
+        // 初始化图表的函数
+        function renderChart(chart, data, title) {
+            chart.setOption({
+                title: {
+                    text: title,
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b} : {c} ({d}%)'
+                },
+                series: [{
+                    name: '数据',
+                    type: 'pie',
+                    radius: ['20%', '60%'],
+                    center: ['50%', '50%'],
+                    roseType: 'radius',
+                    data: data,
+                    label: {
+                        normal: {
+                            show: true,
+                            position: 'outside',
+                            formatter: '{b}'
+                        }
+                    }
+                }]
+            });
+        }
+    </script>
+</body>
+</html>

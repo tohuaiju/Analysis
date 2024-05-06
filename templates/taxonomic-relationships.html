@@ -2,155 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Radial Tree Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Taxonomy</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-        /* 径向树状图的样式 */
-        text {
-            font-size: 11px;
-            pointer-events: none;
-        }
-        text.shadow {
-            stroke: #fff;
-            stroke-width: 3;
-            stroke-opacity: .8;
-        }
-    </style>
 </head>
 <body>
-    <!-- 径向树状图的容器 -->
-    <div id="radial-tree-container"></div>
+    <svg width="800" height="600"></svg>
 
     <script>
-        // 径向树状图的完整实现代码
-        function Tree(data, {
-            path,
-            id = Array.isArray(data) ? d => d.id : null,
-            parentId = Array.isArray(data) ? d => d.parentId : null,
-            children,
-            tree = d3.tree,
-            separation = tree === d3.tree ? (a, b) => (a.parent == b.parent ? 1 : 2) / a.depth : (a, b) => a.parent == b.parent ? 1 : 2,
-            sort,
-            label = d => d.data.name,
-            title,
-            link,
-            linkTarget = "_blank",
-            width = 640,
-            height = 400,
-            margin = 60,
-            marginTop = margin,
-            marginRight = margin,
-            marginBottom = margin,
-            marginLeft = margin,
-            radius = Math.min(width - marginLeft - marginRight, height - marginTop - marginBottom) / 2,
-            r = 3,
-            padding = 1,
-            fill = "#999",
-            fillOpacity,
-            stroke = "#555",
-            strokeWidth = 1.5,
-            strokeOpacity = 0.4,
-            strokeLinejoin = "round",
-            strokeLinecap = "round",
-            halo = "#fff",
-            haloWidth = 3,
-        } = {}) {
-
-            const root = path != null ? d3.stratify()
-                .path(path)
-                (data)
-                : id != null || parentId != null ? d3.stratify()
-                    .id(id)
-                    .parentId(parentId)
-                    (data)
-                    : d3.hierarchy(data, children);
-
-            if (sort != null) root.sort(sort);
-
-            const descendants = root.descendants();
-            const L = label != null ? descendants.map(d => label(d.data, d)) : null;
-
-            tree().size([2 * Math.PI, radius])
-                .separation(separation)(root);
-
-            const svg = d3.create("svg")
-                .attr("viewBox", [-marginLeft - radius, -marginTop - radius, width, height])
-                .attr("width", width)
-                .attr("height", height)
-                .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
-                .attr("font-family", "sans-serif")
-                .attr("font-size", 10);
-
-            svg.append("g")
-                .attr("fill", "none")
-                .attr("stroke", stroke)
-                .attr("stroke-opacity", strokeOpacity)
-                .attr("stroke-linecap", strokeLinecap)
-                .attr("stroke-linejoin", strokeLinejoin)
-                .attr("stroke-width", strokeWidth)
-                .selectAll("path")
-                .data(root.links())
-                .join("path")
-                .attr("d", d3.linkRadial()
-                    .angle(d => d.x)
-                    .radius(d => d.y));
-
-            const node = svg.append("g")
-                .selectAll("a")
-                .data(descendants)
-                .join("a")
-                .attr("xlink:href", link == null ? null : d => link(d.data, d))
-                .attr("target", link == null ? null : linkTarget)
-                .attr("transform", d => `rotate(${(d.x * 180 / Math.PI - 90)}) translate(${d.y},0)`);
-
-            node.append("circle")
-                .attr("fill", d => d.children ? stroke : fill)
-                .attr("r", r);
-
-            if (title != null) node.append("title")
-                .text(d => title(d.data, d));
-
-            if (L) node.append("text")
-                .attr("transform", d => `rotate(${(d.x > Math.PI) ? 180 : 0})`)
-                .attr("dy", "0.32em")
-                .attr("x", d => d.x < Math.PI === !d.children ? 6 : -6)
-                .attr("text-anchor", d => d.x < Math.PI === !d.children ? "start" : "end")
-                .attr("paint-order", "stroke")
-                .attr("stroke", halo)
-                .attr("stroke-width", haloWidth)
-                .text((d, i) => L[i]);
-
-            return svg.node();
-        }
-
-        // 假设的数据结构，你需要用实际的数据替换这里的数据
-        const exampleData = {
-            name: "Root",
-            children: [
+        // 数据
+        const data = {
+            "name": "Plants",
+            "children": [
                 {
-                    name: "Child 1",
-                    children: [
-                        { name: "Grandchild 1.1" },
-                        { name: "Grandchild 1.2" }
-                    ]
-                },
-                {
-                    name: "Child 2",
-                    children: [
-                        { name: "Grandchild 2.1" },
-                        { name: "Grandchild 2.2" }
+                    "name": "被子植物门",
+                    "children": [
+                        {
+                            "name": "双子叶植物纲",
+                            "children": [
+                                {
+                                    "name": "杜鹃花目",
+                                    "children": [
+                                        {"name": "凤仙花科", "children": [{"name": "凤仙花属"}]}
+                                    ]
+                                },
+                                {
+                                    "name": "中央种子目",
+                                    "children": [
+                                        {"name": "石竹科", "children": [{"name": "石柱属"}]}
+                                    ]
+                                },
+                                {
+                                    "name": "菊目",
+                                    "children": [
+                                        {"name": "菊科", "children": [{"name": "天人菊属"}]}
+                                    ]
+                                },
+                                {
+                                    "name": "",
+                                    "children": [
+                                        {"name": "十字花科", "children": [{"name": "诸葛菜属"}]}
+                                    ]
+                                }
+                            ]
+                        }
                     ]
                 }
             ]
         };
 
-        // 页面加载完成后，调用Tree函数并附加到页面的特定部分
-        document.addEventListener('DOMContentLoaded', function() {
-            const treeContainer = document.getElementById('radial-tree-container');
-            treeContainer.appendChild(Tree(exampleData, {
-                // 配置项可以根据需要进行调整
-            }));
-        });
+        // 创建一个树形布局
+        const treeLayout = d3.tree().size([600, 400]);
+
+        // 将数据转换为层次结构
+        const root = d3.hierarchy(data);
+
+        // 对数据进行布局
+        const treeData = treeLayout(root);
+
+        // 创建一个 SVG 容器
+        const svg = d3.select("svg");
+
+        // 创建一个用于绘制树形结构的组元素
+        const treeGroup = svg.append("g").attr("transform", "translate(50,50)");
+
+        // 创建连线生成器
+        const linkGenerator = d3.linkHorizontal()
+            .x(d => d.y)
+            .y(d => d.x);
+
+        // 绘制连线
+        treeGroup.selectAll("path")
+            .data(treeData.links())
+            .enter().append("path")
+            .attr("d", linkGenerator);
+
+        // 绘制节点
+        const nodes = treeGroup.selectAll("g")
+            .data(treeData.descendants())
+            .enter().append("g")
+            .attr("transform", d => `translate(${d.y},${d.x})`);
+
+        nodes.append("circle")
+            .attr("r", 5);
+
+        nodes.append("text")
+            .text(d => d.data.name)
+            .attr("dx", 10)
+            .attr("dy", 4);
     </script>
 </body>
 </html>
