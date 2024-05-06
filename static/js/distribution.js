@@ -20,7 +20,7 @@ $(document).ready(function(){
     // 当在搜索框中按键时
     $("#search").keyup(function(event) {
         // 如果按下的键是回车键
-        if(event.key === "Enter"){
+        if(event.which === 13){
             // 触发搜索功能
             searchFunction();
         }

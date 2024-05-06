@@ -2,82 +2,155 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scientific Classification</title>
-    <!-- 引入 ECharts 文件 -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <title>Radial Tree Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* 径向树状图的样式 */
+        text {
+            font-size: 11px;
+            pointer-events: none;
+        }
+        text.shadow {
+            stroke: #fff;
+            stroke-width: 3;
+            stroke-opacity: .8;
+        }
+    </style>
 </head>
 <body>
-  <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
-  <div id="main" style="width: 800px;height:600px;"></div>
-  <script type="text/javascript">
-    // 基于准备好的dom，初始化echarts实例
-    var myChart = echarts.init(document.getElementById('main'));
+    <!-- 径向树状图的容器 -->
+    <div id="radial-tree-container"></div>
 
-    // 从静态文件读取TSV数据
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/static/datasets/basicData.tsv', true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            var tsvData = xhr.responseText;
-            // 解析TSV数据
-            var lines = tsvData.split('\n');
-            var nodes = [];
-            var links = [];
-            for (var i = 1; i < lines.length; i++) { // 从第二行开始解析数据
-                var parts = lines[i].trim().split('\t');
-                if (parts.length >= 4) { // 至少有四列数据
-                    var parentName = parts[1]; // 父节点名称
-                    var childName = parts[3]; // 子节点名称
-                    nodes.push({name: parentName});
-                    nodes.push({name: childName});
-                    links.push({source: parentName, target: childName});
-                }
-            }
-            // 构建图表数据
-            var option = {
-                title: {
-                    text: 'Scientific Classification',
-                    subtext: 'From Wikipedia, the free encyclopedia',
-                    left: 'center'
-                },
-                tooltip: {
-                    trigger: 'item',
-                    formatter: '{b}'
-                },
-                legend: {
-                    show: true,
-                    data: ['Scientific Classification']
-                },
-                series: [{
-                    type: 'graph',
-                    layout: 'force',
-                    force: {
-                        repulsion: 200, // 节点间斥力，数值越大则节点间距越大
-                        edgeLength: 100 // 线的长度，数值越大则节点间距越大
-                    },
-                    symbolSize: 7,
-                    roam: true, // 开启鼠标缩放和平移漫游
-                    label: {
-                        show: true,
-                        position: 'right',
-                        fontSize: 12
-                    },
-                    edgeSymbol: ['circle', 'arrow'],
-                    edgeSymbolSize: [2, 5],
-                    edgeLabel: {
-                        show: true,
-                        formatter: '{c}'
-                    },
-                    data: nodes,
-                    links: links
-                }]
-            };
-            // 使用刚指定的配置项和数据显示图表。
-            myChart.setOption(option);
+    <script>
+        // 径向树状图的完整实现代码
+        function Tree(data, {
+            path,
+            id = Array.isArray(data) ? d => d.id : null,
+            parentId = Array.isArray(data) ? d => d.parentId : null,
+            children,
+            tree = d3.tree,
+            separation = tree === d3.tree ? (a, b) => (a.parent == b.parent ? 1 : 2) / a.depth : (a, b) => a.parent == b.parent ? 1 : 2,
+            sort,
+            label = d => d.data.name,
+            title,
+            link,
+            linkTarget = "_blank",
+            width = 640,
+            height = 400,
+            margin = 60,
+            marginTop = margin,
+            marginRight = margin,
+            marginBottom = margin,
+            marginLeft = margin,
+            radius = Math.min(width - marginLeft - marginRight, height - marginTop - marginBottom) / 2,
+            r = 3,
+            padding = 1,
+            fill = "#999",
+            fillOpacity,
+            stroke = "#555",
+            strokeWidth = 1.5,
+            strokeOpacity = 0.4,
+            strokeLinejoin = "round",
+            strokeLinecap = "round",
+            halo = "#fff",
+            haloWidth = 3,
+        } = {}) {
+
+            const root = path != null ? d3.stratify()
+                .path(path)
+                (data)
+                : id != null || parentId != null ? d3.stratify()
+                    .id(id)
+                    .parentId(parentId)
+                    (data)
+                    : d3.hierarchy(data, children);
+
+            if (sort != null) root.sort(sort);
+
+            const descendants = root.descendants();
+            const L = label != null ? descendants.map(d => label(d.data, d)) : null;
+
+            tree().size([2 * Math.PI, radius])
+                .separation(separation)(root);
+
+            const svg = d3.create("svg")
+                .attr("viewBox", [-marginLeft - radius, -marginTop - radius, width, height])
+                .attr("width", width)
+                .attr("height", height)
+                .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10);
+
+            svg.append("g")
+                .attr("fill", "none")
+                .attr("stroke", stroke)
+                .attr("stroke-opacity", strokeOpacity)
+                .attr("stroke-linecap", strokeLinecap)
+                .attr("stroke-linejoin", strokeLinejoin)
+                .attr("stroke-width", strokeWidth)
+                .selectAll("path")
+                .data(root.links())
+                .join("path")
+                .attr("d", d3.linkRadial()
+                    .angle(d => d.x)
+                    .radius(d => d.y));
+
+            const node = svg.append("g")
+                .selectAll("a")
+                .data(descendants)
+                .join("a")
+                .attr("xlink:href", link == null ? null : d => link(d.data, d))
+                .attr("target", link == null ? null : linkTarget)
+                .attr("transform", d => `rotate(${(d.x * 180 / Math.PI - 90)}) translate(${d.y},0)`);
+
+            node.append("circle")
+                .attr("fill", d => d.children ? stroke : fill)
+                .attr("r", r);
+
+            if (title != null) node.append("title")
+                .text(d => title(d.data, d));
+
+            if (L) node.append("text")
+                .attr("transform", d => `rotate(${(d.x > Math.PI) ? 180 : 0})`)
+                .attr("dy", "0.32em")
+                .attr("x", d => d.x < Math.PI === !d.children ? 6 : -6)
+                .attr("text-anchor", d => d.x < Math.PI === !d.children ? "start" : "end")
+                .attr("paint-order", "stroke")
+                .attr("stroke", halo)
+                .attr("stroke-width", haloWidth)
+                .text((d, i) => L[i]);
+
+            return svg.node();
         }
-    };
-    xhr.send();
-  </script>
+
+        // 假设的数据结构，你需要用实际的数据替换这里的数据
+        const exampleData = {
+            name: "Root",
+            children: [
+                {
+                    name: "Child 1",
+                    children: [
+                        { name: "Grandchild 1.1" },
+                        { name: "Grandchild 1.2" }
+                    ]
+                },
+                {
+                    name: "Child 2",
+                    children: [
+                        { name: "Grandchild 2.1" },
+                        { name: "Grandchild 2.2" }
+                    ]
+                }
+            ]
+        };
+
+        // 页面加载完成后，调用Tree函数并附加到页面的特定部分
+        document.addEventListener('DOMContentLoaded', function() {
+            const treeContainer = document.getElementById('radial-tree-container');
+            treeContainer.appendChild(Tree(exampleData, {
+                // 配置项可以根据需要进行调整
+            }));
+        });
+    </script>
 </body>
 </html>
