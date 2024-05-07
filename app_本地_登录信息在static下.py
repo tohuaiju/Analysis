@@ -1,58 +1,92 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, redirect, url_for, abort, send_from_directory, jsonify
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+import json
 import os
 
+# 初始化 Flask 应用
 app = Flask(__name__)
-app.secret_key = 'secret_key_babalababa'  # 设置一个随机的秘钥
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://Analyze:mysql2513@Analyze.mysql.pythonanywhere-services.com/Analyze$default'  # 设置数据库连接
-db = SQLAlchemy(app)
+
+# 配置密钥，用于用户登录会话安全
+# 会话安全，就是用户登录后，在一段时间内，用户可以不用输入密码，直接访问网站，配置秘钥能对这部分数据进行加密
+app.secret_key = 'secret_key_babalababa'
+
+# 配置静态文件路径
+app.config['STATIC_FOLDER'] = {
+    'static': 'static',
+    'node_modules': 'node_modules'
+}
+# static的那个应该是内置有的定义
+@app.route('/node_modules/<path:filename>')
+def node_modules_files(filename):
+    return send_from_directory(app.config['STATIC_FOLDER']['node_modules'], filename)
+
+# 配置 LoginManager
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# 创建用户模型
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
+# 用户数据文件路径
+# 按道理来说，这个文件应该放在数据库中，放在这里一是为了方便测试，二是为了方便部署
+# 因为pythonanywhere的数据库不支持外部连接（卑微的免费用户）
+USERS_FILE = 'static/json/users.json'
 
-    def __repr__(self):
-        return '<User %r>' % self.username
+# 如果用户数据文件不存在，则创建一个空文件
+if not os.path.exists(USERS_FILE):
+    with open(USERS_FILE, 'w') as f:
+        json.dump([], f)
 
-# 创建管理员用户模型
-class Admin(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
-    is_admin = db.Column(db.Boolean, default=True)
+# 定义用户类
+class User(UserMixin):
+    def __init__(self, id, username, email, password, is_admin=False):
+        self.id = id
+        self.username = username
+        self.email = email
+        self.password = password
+        self.is_admin = is_admin
 
-    def __repr__(self):
-        return '<Admin %r>' % self.username
 
-# 管理员权限装饰器
+# 创建管理员用户
+admin_user = User(id=0, username='admin', email='admin@example.com', password='password')
+admin_user.is_admin = True  # 将管理员用户标记为管理员
+
+# 装饰器：检查是否为管理员
 def admin_required(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
         if current_user.is_authenticated and current_user.is_admin:
             return func(*args, **kwargs)
         else:
-            flash('Permission denied.', 'error')
-            return redirect(url_for('login'))
+            abort(403)  # 禁止访问
     return decorated_function
 
-# 用户登录加载函数
+# 登录用户加载函数
+# 这里的问题，怪不得我的管理一直无法登录
 @login_manager.user_loader
 def load_user(user_id):
-    user = User.query.get(user_id)
-    if user:
-        return user
+    if user_id == '0':
+        return admin_user
     else:
-        return Admin.query.get(user_id)
+        users = load_users()
+        for user_data in users:
+            if str(user_data['id']) == user_id:
+                return User(**user_data)
+    return None
+
+
+# 加载用户数据
+def load_users():
+    with open(USERS_FILE, 'r') as f:
+        return json.load(f)
+
+# 保存用户数据
+def save_users(users):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f)
+
+# 首页路由
+@app.route('/')
+def home():
+    return render_template('login.html')
 
 # 登录路由
 @app.route('/login', methods=['GET', 'POST'])
@@ -61,19 +95,20 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        # 先检查是否为管理员
-        admin = Admin.query.filter_by(username=username).first()
-        if admin and check_password_hash(admin.password, password):
-            login_user(admin)
+        if username == 'admin' and password == 'password':
+            admin_user.is_admin = True  # 将管理员用户标记为管理员
+            login_user(admin_user)
+
             return redirect(url_for('manage_users'))
 
-        # 如果不是管理员，则继续检查普通用户
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid username or password.', 'error')
+        users = load_users()
+        for user_data in users:
+            if user_data['username'] == username and user_data['password'] == password:
+                user = User(**user_data)
+                login_user(user)
+                return redirect(url_for('index'))
+
+        return render_template('login.html', error_message='用户名或密码错误')
 
     return render_template('login.html')
 
@@ -85,49 +120,59 @@ def signup():
         email = request.form['email']
         password = request.form['password']
 
-        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
-        if existing_user:
-            flash('Username or email already exists.', 'error')
-            return redirect(url_for('signup'))
+        users = load_users()
+        max_user_id = max([user['id'] for user in users]) if users else 0
+        for user_data in users:
+            if user_data['username'] == username:
+                return render_template('login.html', error_message='Username already exists')
+            if user_data['email'] == email:
+                return render_template('login.html', error_message='Email already exists')
 
-        new_user = User(username=username, email=email, password=generate_password_hash(password))
-        db.session.add(new_user)
-        db.session.commit()
+        new_user_id = max_user_id + 1
+        new_user = {'id': new_user_id, 'username': username, 'email': email, 'password': password}
+        users.append(new_user)
+        save_users(users)
 
-        flash('Registration successful. Please log in.', 'success')
         return redirect(url_for('login'))
 
-    return render_template('signup.html')
+    return render_template('login.html')
 
 # 注销路由
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
-    flash('Logged out successfully.', 'success')
     return redirect(url_for('login'))
 
-# 管理用户路由
-@app.route('/manage_users')
+# 个人面板路由
+@app.route('/profile')
 @login_required
-@admin_required
+def profile():
+    return render_template('profile.html', user=current_user)
+
+# 用户管理路由
+@app.route('/manage_users')
 def manage_users():
-    users = User.query.all()
-    return render_template('manage_users.html', users=users)
+    if current_user.is_authenticated and current_user.is_admin:
+        users = load_users()
+        return render_template('manage_users.html', users=users)
+    else:
+        return redirect(url_for('login'))
 
 # 删除用户路由
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
-@admin_required
 def delete_user(user_id):
-    user = User.query.get(user_id)
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        flash('User deleted successfully.', 'success')
+    if current_user.is_authenticated and current_user.is_admin:
+        users = load_users()
+        for idx, user in enumerate(users):
+            if user['id'] == user_id:
+                del users[idx]
+                save_users(users)
+                return redirect(url_for('manage_users'))
+        return 'User not found'
     else:
-        flash('User not found.', 'error')
-    return redirect(url_for('manage_users'))
+        return 'Access Denied'
 
 # 子路由：首页
 @app.route("/index.html")
