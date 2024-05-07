@@ -7,8 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="icon" href="static/img/logo_black.png">
 <link rel="stylesheet" href="static/css/chat.css">
-  <style>
-
+<style>
     path {
       stroke: #fff;
       fill-rule: evenodd;
@@ -22,21 +21,22 @@
     pre {
       white-space: pre-wrap;
     }
-    #vis2{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%; /* 设置高度为100%，使其填充整个父容器 */
-    }
-    #vis1{
+    #vis2 {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100%; /* 设置高度为100%，使其填充整个父容器 */
     }
 
+    /* 给vis加上之后，不见了，不知道为什么，z-index改的死高都没用 */
+    #vis {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%; /* 设置高度为100%，使其填充整个父容器 */
+    }
+</style>
 
-  </style>
   <meta http-equiv="x-content-type-options" content="nosniff">
 </head>
 <body>
@@ -67,7 +67,7 @@
 </div>
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-  <script src="static/js/login.js"></script>
+  <script src="static/js/chat.js"></script>
 <script>
     var flare = {
       "name": "root",
