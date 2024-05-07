@@ -290,6 +290,21 @@ def distribution():
 def category():
     return render_template('category.html')
 
+@app.route('/card.html')
+@login_required
+def card():
+    return render_template('card.html')
+
+@app.route('/card_2.html')
+@login_required
+def card_2():
+    return render_template('card_2.html')
+
+@app.route('/chat.html')
+@login_required
+def 切换():
+    return render_template('chat.html')
+
 # 子路由：植物数据
 @app.route('/get_plant_data')
 def get_plant_data():

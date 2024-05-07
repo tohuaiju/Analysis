@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cluster Visualization</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="icon" href="static/img/logo_black.png">
+<link rel="stylesheet" href="static/css/chat.css">
+  <style>
+
+    path {
+      stroke: #fff;
+      fill-rule: evenodd;
+    }
+
+    text {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    pre {
+      white-space: pre-wrap;
+    }
+    #vis2{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%; /* 设置高度为100%，使其填充整个父容器 */
+    }
+    #vis1{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%; /* 设置高度为100%，使其填充整个父容器 */
+    }
+
+
+  </style>
+  <meta http-equiv="x-content-type-options" content="nosniff">
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="form-container sign-up-container">
+        <div id="vis"></div>
+    </div>
+    <div class="form-container sign-in-container">
+        <div id="vis2"></div>
+    </div>
+    <div class="overlay-container">
+
+        <div class="overlay">
+            <div class="overlay-panel overlay-left">
+                <h1>分区图功能演示</h1>
+                <p>分区图适用于展示具有层次结构的数据，例如树状结构或分层结构。图表的每个层级代表数据的一个层次，可以从根节点开始逐级展开。</p>
+                <p>分区图清晰地表现了数据的父子关系。每个节点代表一个数据元素，节点的大小（面积）通常表示与其相关的数值或权重。分区图通常支持交互式操作，我们可以点击节点来展开或折叠子节点，以便深入了解数据的细节或进行聚焦分析。</p>
+                <button class="ghost" id="signIn">回到植物科属分析图</button>
+            </div>
+            <div class="overlay-panel overlay-right">
+                <h1>植物科属分析图</h1>
+                <p>这是用D3.js库创建的一个分区图（或称为旭日图）的可视化图表。这种图表适用于展示层次数据的结构，通常用来显示树状结构或分层结构。</p>
+                <p>如果你因为数据的杂乱性对于分区图的概念有点不理解，尝试下面的按钮，切换到分区图功能演示，相信你很快就能知道它的效果所在。</p>
+                <button class="ghost" id="signUp">切换至分区图演示</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  <script src="static/js/login.js"></script>
+<script>
+    var flare = {
+      "name": "root",
+      "children": [
+        {
+          "name": "Fruit",
+          "children": [
+            {
+              "name": "Tomato",
+              "children": [
+                { "name": ["4", "6", "16", "21", "28", "36"], "size": 6 }
+              ]
+            },
+            {
+              "name": "Apple",
+              "children": [
+                { "name": ["1", "5", "11", "17"], "size": 4 },
+                { "name": ["9", "15", "19", "20"], "size": 4 }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Vegetable",
+          "children": [
+            {
+              "name": "Carrot",
+              "children": [
+                { "name": ["2", "7", "12", "18"], "size": 4 },
+                { "name": ["8", "14", "22", "23"], "size": 4 }
+              ]
+            },
+            {
+              "name": "Broccoli",
+              "children": [
+                { "name": ["3", "10", "13", "16"], "size": 4 },
+                { "name": ["24", "25", "26", "27"], "size": 4 }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    var width = 300,
+        height = 350,
+        radius = Math.min(width, height) / 2;
+
+    var x = d3.scale.linear()
+        .range([0, 2 * Math.PI]);
+
+    var y = d3.scale.linear()
+        .range([0, radius]);
+
+    var color = d3.scale.category20c();
+
+    var partition = d3.layout.partition()
+        .value(function(d) { return d.size; });
+
+    var arc = d3.svg.arc()
+        .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+        .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+        .innerRadius(function(d) { return Math.max(0, y(d.y)); })
+        .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
+
+    var svg = d3.select("#vis").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+
+    var g = svg.selectAll("g")
+        .data(partition.nodes(flare))
+      .enter().append("g");
+
+    var path = g.append("path")
+        .attr("d", arc)
+        .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+        .on("click", click);
+
+    var text = g.append("text")
+        .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+        .attr("x", function(d) { return y(d.y); })
+        .attr("dx", "6")
+        .attr("dy", ".35em")
+        .text(function(d) { return d.name; });
+
+    function click(d) {
+      path.transition()
+        .duration(750)
+        .attrTween("d", arcTween(d));
+    }
+
+    function computeTextRotation(d) {
+      return (x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180;
+    }
+
+    function arcTween(d) {
+      var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+          yd = d3.interpolate(y.domain(), [d.y, 1]),
+          yr = d3.interpolate(y.range(), [(d.y ? 20 : 0), radius]);
+      return function(d, i) {
+        return i ? function(t) { return arc(d); } : function(t) {
+          x.domain(xd(t));
+          y.domain(yd(t)).range(yr(t));
+          return arc(d);
+        };
+      };
+    }
+  </script>
+<script>
+    d3.json("static/datasets/output.json", function(error, data) {
+      if (error) throw error;
+
+      var width = 400,
+          height = 500,
+          radius = Math.min(width, height) / 2;
+
+      var x = d3.scale.linear()
+          .range([0, 2 * Math.PI]);
+
+      var y = d3.scale.linear()
+          .range([0, radius]);
+
+      var color = d3.scale.category20c();
+
+      var partition = d3.layout.partition()
+          .value(function(d) { return d.size; })
+          .sort(null)
+          .children(function(d) { return Array.isArray(d.children) ? d.children : null; });
+
+      var arc = d3.svg.arc()
+          .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+          .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+          .innerRadius(function(d) { return Math.max(0, y(d.y)); })
+          .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
+
+      var svg = d3.select("#vis2").append("svg")
+          .attr("width", width)
+          .attr("height", height)
+        .append("g")
+          .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+
+      var g = svg.selectAll("g")
+          .data(partition.nodes(data))
+        .enter().append("g");
+
+      var path = g.append("path")
+          .attr("d", arc)
+          .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+          .on("click", click);
+
+      var text = g.append("text")
+          .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+          .attr("x", function(d) { return y(d.y); })
+          .attr("dx", "6")
+          .attr("dy", ".35em")
+          .text(function(d) { return d.name; });
+
+      function click(d) {
+        path.transition()
+          .duration(750)
+          .attrTween("d", arcTween(d));
+      }
+
+      function computeTextRotation(d) {
+        return (x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180;
+      }
+
+      function arcTween(d) {
+        var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+            yd = d3.interpolate(y.domain(), [d.y, 1]),
+            yr = d3.interpolate(y.range(), [(d.y ? 20 : 0), radius]);
+        return function(d, i) {
+          return i ? function(t) { return arc(d); } : function(t) {
+            x.domain(xd(t));
+            y.domain(yd(t)).range(yr(t));
+            return arc(d);
+          };
+        };
+      }
+    });
+  </script>
+</body>
+</html>
